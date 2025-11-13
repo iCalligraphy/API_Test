@@ -199,29 +199,44 @@ class CharacterExtractor:
         return filename
     
     def save_character(self, char_image: Image.Image, word_box: Dict[str, Any], 
-                      image_name: str, output_format: str = 'PNG') -> Path:
+                      output_dir: Path, char_count: Dict[str, int], 
+                      output_format: str = 'PNG') -> Path:
         """
         保存提取的字符图片
         
         Args:
             char_image: 字符图片
             word_box: 字边界框信息
-            image_name: 原始图片名称
+            output_dir: 输出目录（字帖文件夹）
+            char_count: 字符计数字典，用于处理重复字符
             output_format: 输出格式（PNG, JPEG等）
             
         Returns:
             保存的文件路径
         """
         text = word_box['text']
-        line_idx = word_box['line_index']
-        word_idx = word_box['word_index']
-        confidence = word_box.get('confidence', 0.0)
         
-        # 生成文件名：图片名_行号_字序号_字符_置信度.png
+        # 清理字符文本作为文件名
         safe_text = self.sanitize_filename(text)
-        filename = f"{image_name}_L{line_idx:03d}_W{word_idx:03d}_{safe_text}_C{confidence:.3f}.{output_format.lower()}"
         
-        output_path = self.chars_dir / filename
+        # 如果字符为空，使用占位符
+        if not safe_text or safe_text.strip() == '':
+            safe_text = 'unknown'
+        
+        # 更新字符计数
+        if safe_text not in char_count:
+            char_count[safe_text] = 0
+        
+        char_count[safe_text] += 1
+        count = char_count[safe_text]
+        
+        # 生成文件名：如果出现多次则添加序号
+        if count == 1:
+            filename = f"{safe_text}.{output_format.lower()}"
+        else:
+            filename = f"{safe_text}_{count}.{output_format.lower()}"
+        
+        output_path = output_dir / filename
         
         # 保存图片
         if output_format.upper() == 'PNG':
@@ -288,6 +303,13 @@ class CharacterExtractor:
         
         print(f"找到 {len(word_boxes)} 个字符，开始提取...")
         
+        # 创建字帖文件夹（按字帖名称）
+        calligraphy_folder = self.chars_dir / image_name
+        calligraphy_folder.mkdir(parents=True, exist_ok=True)
+        
+        # 字符计数字典，用于处理重复字符
+        char_count = {}
+        
         # 提取并保存每个字符
         extracted_count = 0
         skipped_count = 0
@@ -308,7 +330,7 @@ class CharacterExtractor:
             
             # 保存字符
             try:
-                output_path = self.save_character(char_image, word_box, image_name, output_format)
+                output_path = self.save_character(char_image, word_box, calligraphy_folder, char_count, output_format)
                 saved_files.append(str(output_path))
                 extracted_count += 1
             except Exception as e:
@@ -321,7 +343,7 @@ class CharacterExtractor:
             'total_characters': len(word_boxes),
             'extracted_count': extracted_count,
             'skipped_count': skipped_count,
-            'output_dir': str(self.chars_dir),
+            'output_dir': str(calligraphy_folder),
             'saved_files': saved_files
         }
         
