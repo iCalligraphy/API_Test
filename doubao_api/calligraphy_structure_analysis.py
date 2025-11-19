@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-书法汉字笔迹流程图生成工具
-使用豆包大模型视觉API分析书法汉字，并通过图像生成API生成笔迹流程图
+书法汉字结构分析图生成工具
+使用豆包大模型视觉API分析书法汉字的结构组成，并通过图像生成API生成结构分析图
 
 注意事项：
 1. 必须使用支持视觉输入的模型（如 doubao-1.5-vision-pro-32k-250115）
@@ -30,8 +30,8 @@ from pathlib import Path
 from PIL import Image
 
 
-class CalligraphyStrokeAnalyzer:
-    """书法笔迹分析器，用于生成汉字笔迹流程图"""
+class CalligraphyStructureAnalyzer:
+    """书法结构分析器，用于生成汉字结构分析图"""
     
     def __init__(self, vision_model: str = None, image_model: str = None):
         """初始化分析器，从环境变量读取配置
@@ -82,16 +82,16 @@ class CalligraphyStrokeAnalyzer:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
     
-    def analyze_stroke_with_vision(self, image_path: str, character_name: str = None) -> str:
+    def analyze_structure_with_vision(self, image_path: str, character_name: str = None) -> str:
         """
-        使用视觉模型分析书法汉字笔迹结构
+        使用视觉模型分析书法汉字结构组成
         
         Args:
             image_path: 书法汉字图片路径
             character_name: 汉字名称（可选）
             
         Returns:
-            笔迹结构分析描述（用于生成图片提示词）
+            结构组成分析描述（用于生成图片提示词）
         """
         # 编码图片
         base64_image = self.encode_image_to_base64(image_path)
@@ -100,14 +100,16 @@ class CalligraphyStrokeAnalyzer:
         # 构建提示词
         char_info = f"'{character_name}'字" if character_name else "这个书法汉字"
         
-        prompt = f"""请分析{char_info}的笔迹结构，用简洁的语言描述：
+        prompt = f"""请分析{char_info}的结构组成，用简洁的语言描述：
 
-1. 有哪些笔画（如：横、竖、撇、捺、点等）
-2. 正确的笔顺是什么
-3. 每一笔的书写特点（起笔、行笔、收笔）
-4. 整体书法风格特征
+1. 汉字的整体结构类型（如：左右结构、上下结构、左中右结构、上中下结构、半包围结构、全包围结构、独体字等）
+2. 主要组成部分（如：偏旁部首、主体部分等）
+3. 各部分之间的位置关系和比例关系
+4. 各部分的高低、宽窄、大小关系
+5. 结构的穿插避让关系
+6. 整体重心和平衡特点
 
-请用1-2段话概括，简洁明了。"""
+请用2-3段话概括，详细描述各部分的结构关系，便于用箭头标注。"""
 
         try:
             # 调用视觉API
@@ -116,7 +118,7 @@ class CalligraphyStrokeAnalyzer:
                 messages=[
                     {
                         "role": "system", 
-                        "content": "你是一位专业的书法教师，擅长分析书法作品的笔画结构。"
+                        "content": "你是一位专业的书法教师，擅长分析汉字的结构组成和空间布局。"
                     },
                     {
                         "role": "user",
@@ -142,12 +144,12 @@ class CalligraphyStrokeAnalyzer:
             print(f"视觉分析API调用错误: {e}")
             return None
     
-    def generate_stroke_diagram_image(self, analysis_text: str, character_name: str = None) -> bytes:
+    def generate_structure_diagram_image(self, analysis_text: str, character_name: str = None) -> bytes:
         """
-        使用图像生成API创建笔迹流程图
+        使用图像生成API创建结构分析图
         
         Args:
-            analysis_text: 笔迹分析文本
+            analysis_text: 结构分析文本
             character_name: 汉字名称（可选）
             
         Returns:
@@ -156,22 +158,26 @@ class CalligraphyStrokeAnalyzer:
         # 构建图片生成提示词
         char_info = f"'{character_name}'字" if character_name else "这个书法汉字"
         
-        prompt = f"""创建一张书法教学图解，展示{char_info}的笔画流程：
+        prompt = f"""创建一张书法结构教学分析图，展示{char_info}的结构组成：
 
 要求：
-- 白色背景，清晰简洁
-- 上方展示完整的汉字
-- 下方用多个步骤图展示每一笔的书写过程
-- 用数字标注笔顺（1、2、3...）
-- 用箭头标注笔画方向
-- 标注起笔、行笔、收笔的位置
-- 整体布局清晰，适合教学使用
-- 采用中国传统书法教学图解风格
+- 白色背景，清晰简洁的教学风格
+- 中央展示完整的汉字，保持书法原貌
+- 用不同颜色的边框或底色区分不同的组成部分（如左右、上下等）
+- 用清晰的箭头标注各部分之间的关系：
+  * 用双向箭头标注位置和比例关系
+  * 用单向箭头指示部分之间的穿插避让
+  * 箭头旁边标注关键说明（如"左窄右宽"、"上下均分"、"左伸右让"等）
+- 用辅助线标注重心、中线、对齐线等关键结构线
+- 标注各部分的名称（如"偏旁部首"、"主体部分"等）
+- 标注整体结构类型（如"左右结构"等）
+- 整体布局清晰，适合书法结构教学
+- 采用中国传统书法教学图解风格，但要突出结构分析
 
-笔画分析：
+结构分析：
 {analysis_text}
 
-请生成专业的书法笔迹流程图。"""
+请生成专业的书法结构分析图，重点用箭头和标注展示各部分的结构关系。"""
         
         try:
             # 调用图像生成API
@@ -213,11 +219,11 @@ class CalligraphyStrokeAnalyzer:
     
     def combine_images(self, original_image_path: str, diagram_image_data: bytes, character_name: str) -> str:
         """
-        将原始汉字图片和生成的笔迹流程图上下组合
+        将原始汉字图片和生成的结构分析图上下组合
         
         Args:
             original_image_path: 原始汉字图片路径
-            diagram_image_data: 生成的笔迹流程图二进制数据
+            diagram_image_data: 生成的结构分析图二进制数据
             character_name: 汉字名称
             
         Returns:
@@ -227,24 +233,24 @@ class CalligraphyStrokeAnalyzer:
             # 打开原始图片
             original_img = Image.open(original_image_path)
             
-            # 打开生成的流程图（保持高分辨率）
+            # 打开生成的分析图（保持高分辨率）
             diagram_img = Image.open(BytesIO(diagram_image_data))
             
             # 创建输出目录
             output_dir = Path(original_image_path).parent.parent / "outputs"
             output_dir.mkdir(exist_ok=True)
             
-            # 【新增】单独保存高分辨率流程图
-            diagram_only_path = output_dir / f"{character_name}_diagram_only.png"
+            # 单独保存高分辨率结构分析图
+            diagram_only_path = output_dir / f"{character_name}_structure_diagram_only.png"
             diagram_img.save(diagram_only_path, 'PNG', optimize=True)
-            print(f"  → 流程图已保存: {diagram_only_path}")
+            print(f"  → 结构分析图已保存: {diagram_only_path}")
             
-            # 调整原图宽度以匹配流程图（放大原图，保持流程图高分辨率）
+            # 调整原图宽度以匹配分析图（放大原图，保持分析图高分辨率）
             if original_img.width != diagram_img.width:
                 ratio = diagram_img.width / original_img.width
                 new_size = (diagram_img.width, int(original_img.height * ratio))
                 original_img = original_img.resize(new_size, Image.Resampling.LANCZOS)
-                print(f"  → 原图已放大至: {new_size[0]}x{new_size[1]}px 以匹配流程图")
+                print(f"  → 原图已放大至: {new_size[0]}x{new_size[1]}px 以匹配分析图")
             
             # 创建新画布（上下组合）
             total_height = original_img.height + diagram_img.height + 20  # 20px间距
@@ -253,11 +259,11 @@ class CalligraphyStrokeAnalyzer:
             # 粘贴原始图片在上方
             combined_img.paste(original_img, (0, 0))
             
-            # 粘贴流程图在下方
+            # 粘贴分析图在下方
             combined_img.paste(diagram_img, (0, original_img.height + 20))
             
             # 保存组合图片
-            combined_path = output_dir / f"{character_name}_stroke_diagram.png"
+            combined_path = output_dir / f"{character_name}_structure_diagram.png"
             combined_img.save(combined_path, 'PNG', optimize=True)
             
             print(f"  → 组合图片尺寸: {combined_img.width}x{combined_img.height}px")
@@ -270,7 +276,7 @@ class CalligraphyStrokeAnalyzer:
     
     def batch_analyze_characters(self, characters_dir: str) -> dict:
         """
-        批量分析characters_test目录下的所有汉字并生成笔迹流程图
+        批量分析characters_test目录下的所有汉字并生成结构分析图
         
         Args:
             characters_dir: 汉字图片目录路径
@@ -291,28 +297,28 @@ class CalligraphyStrokeAnalyzer:
                 print(f"\n正在处理 '{character_name}' 字...")
                 print("=" * 60)
                 
-                # 步骤1: 分析笔迹结构
-                print("[1/3] 分析笔迹结构...")
-                analysis = self.analyze_stroke_with_vision(
+                # 步骤1: 分析结构组成
+                print("[1/3] 分析结构组成...")
+                analysis = self.analyze_structure_with_vision(
                     str(image_file), 
                     character_name
                 )
                 
                 if not analysis:
-                    print(f"✗ '{character_name}' 字分析失败")
+                    print(f"✗ '{character_name}' 字结构分析失败")
                     continue
                 
                 print(f"分析结果: {analysis[:100]}...")  # 只显示前100字符
                 
-                # 步骤2: 生成笔迹流程图
-                print("[2/3] 生成笔迹流程图...")
-                diagram_data = self.generate_stroke_diagram_image(
+                # 步骤2: 生成结构分析图
+                print("[2/3] 生成结构分析图...")
+                diagram_data = self.generate_structure_diagram_image(
                     analysis,
                     character_name
                 )
                 
                 if not diagram_data:
-                    print(f"✗ '{character_name}' 字流程图生成失败")
+                    print(f"✗ '{character_name}' 字结构图生成失败")
                     continue
                 
                 # 步骤3: 组合图片
@@ -341,8 +347,8 @@ class CalligraphyStrokeAnalyzer:
             output_file: 输出文件路径
         """
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write("# 书法汉字笔迹流程图生成报告\n\n")
-            f.write(f"共生成 {len(results)} 个汉字的笔迹流程图\n\n")
+            f.write("# 书法汉字结构分析图生成报告\n\n")
+            f.write(f"共生成 {len(results)} 个汉字的结构分析图\n\n")
             f.write("=" * 80 + "\n\n")
             
             for character_name, output_path in results.items():
@@ -353,14 +359,14 @@ class CalligraphyStrokeAnalyzer:
 
 
 def main():
-    """主函数 - 生成书法笔迹流程图"""
-    print("\n书法汉字笔迹流程图生成工具")
+    """主函数 - 生成书法结构分析图"""
+    print("\n书法汉字结构分析图生成工具")
     print("=" * 60)
     
     try:
         # 创建分析器
         print("\n正在初始化...")
-        analyzer = CalligraphyStrokeAnalyzer()
+        analyzer = CalligraphyStructureAnalyzer()
         print(f"视觉模型: {analyzer.vision_model}")
         print(f"图像生成模型: {analyzer.image_model}")
         
@@ -373,17 +379,17 @@ def main():
             print("请确保 characters_test 目录存在且包含书法汉字图片")
             return
         
-        # 批量生成笔迹流程图
+        # 批量生成结构分析图
         print(f"\n开始处理 {characters_dir} 目录下的书法汉字...\n")
         results = analyzer.batch_analyze_characters(str(characters_dir))
         
         # 保存结果
         if results:
-            output_file = script_dir / "stroke_diagram_results.txt"
+            output_file = script_dir / "structure_diagram_results.txt"
             analyzer.save_results_summary(results, str(output_file))
-            print(f"\n✓ 成功生成 {len(results)} 个汉字的笔迹流程图！")
+            print(f"\n✓ 成功生成 {len(results)} 个汉字的结构分析图！")
         else:
-            print("\n✗ 没有成功生成任何笔迹流程图")
+            print("\n✗ 没有成功生成任何结构分析图")
         
     except ValueError as e:
         print(f"\n✗ 配置错误: {e}")
