@@ -27,3 +27,5 @@ ENV/
 .idea/
 *.swp
 *.swo
+
+doubao_api/outputs/*
