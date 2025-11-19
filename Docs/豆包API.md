@@ -57,3 +57,19 @@ curl -X POST https://ark.cn-beijing.volces.com/api/v3/images/generations \
     "stream": false,
     "watermark": true
 }'
+
+图像编辑API调用
+
+curl -X POST https://ark.cn-beijing.volces.com/api/v3/images/generations \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ARK_API_KEY" \
+  -d '{
+    "model": "doubao-seededit-3-0-i2i-250628",
+    "prompt": "改成爱心形状的泡泡",
+    "image": "https://ark-project.tos-cn-beijing.volces.com/doc_image/seededit_i2i.jpeg",
+    "response_format": "url",
+    "size": "adaptive",
+    "seed": 21,
+    "guidance_scale": 5.5,
+    "watermark": true
+}'

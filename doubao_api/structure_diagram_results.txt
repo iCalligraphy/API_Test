@@ -5,11 +5,11 @@
 ================================================================================
 
 ## 濠 字
-输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\濠_structure_diagram.png
+输出图片: D:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\濠_structure_diagram.png
 
 ## 燒 字
-输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\燒_structure_diagram.png
+输出图片: D:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\燒_structure_diagram.png
 
 ## 閱 字
-输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\閱_structure_diagram.png
+输出图片: D:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\閱_structure_diagram.png
 

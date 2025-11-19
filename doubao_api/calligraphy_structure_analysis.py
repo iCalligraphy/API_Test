@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 """
 书法汉字结构分析图生成工具
-使用豆包大模型视觉API分析书法汉字的结构组成，并通过图像生成API生成结构分析图
+使用豆包大模型视觉API分析书法汉字的结构组成，并通过图像编辑API在原图上添加结构标注
 
 注意事项：
 1. 必须使用支持视觉输入的模型（如 doubao-1.5-vision-pro-32k-250115）
-2. 必须配置图像生成模型（如 doubao-seedream-4-0-250828）
+2. 必须配置图像编辑模型（如 doubao-seededit-3-0-i2i-250628）
 3. 在 .env 文件中配置：
    ARK_API_KEY="your-api-key"
    ARK_VISION_MODEL="doubao-1.5-vision-pro-32k-250115"  # 可选
-   ARK_IMAGE_MODEL="doubao-seedream-4-0-250828"  # 可选
+   ARK_IMAGE_MODEL="doubao-seededit-3-0-i2i-250628"  # 可选
 
 可用的视觉模型：
 - doubao-1.5-vision-pro-250328
 - doubao-1.5-vision-pro-32k-250115 (推荐，更大上下文)
 
-可用的图像生成模型：
-- doubao-seedream-4-0-250828
+可用的图像编辑模型：
+- doubao-seededit-3-0-i2i-250628
 """
 
 import os
@@ -53,11 +53,11 @@ class CalligraphyStructureAnalyzer:
         else:
             self.vision_model = os.environ.get("ARK_VISION_MODEL", "doubao-1.5-vision-pro-32k-250115")
         
-        # 使用图像生成模型
+        # 使用图像编辑模型
         if image_model:
             self.image_model = image_model
         else:
-            self.image_model = os.environ.get("ARK_IMAGE_MODEL", "doubao-seedream-4-0-250828")
+            self.image_model = os.environ.get("ARK_IMAGE_MODEL", "doubao-seededit-3-0-i2i-250628")
         
         # 验证配置
         if not self.api_key:
@@ -144,18 +144,23 @@ class CalligraphyStructureAnalyzer:
             print(f"视觉分析API调用错误: {e}")
             return None
     
-    def generate_structure_diagram_image(self, analysis_text: str, character_name: str = None) -> bytes:
+    def generate_structure_diagram_image(self, analysis_text: str, image_path: str, character_name: str = None) -> bytes:
         """
-        使用图像生成API创建结构分析图
+        使用图像编辑API在原图上添加结构分析标注
         
         Args:
             analysis_text: 结构分析文本
+            image_path: 原始书法汉字图片路径
             character_name: 汉字名称（可选）
             
         Returns:
             生成的图片二进制数据
         """
-        # 构建图片生成提示词
+        # 编码原始图片为base64
+        base64_image = self.encode_image_to_base64(image_path)
+        image_data_url = f"data:image/png;base64,{base64_image}"
+        
+        # 构建图像编辑提示词
         char_info = f"'{character_name}'字" if character_name else "这个书法汉字"
         
         prompt = f"""【重要】请基于提供的原始书法汉字图片，直接在原图上添加结构分析标注。
@@ -187,7 +192,7 @@ class CalligraphyStructureAnalyzer:
 【再次强调】务必直接在原始书法汉字图片上进行标注，不要创建新的汉字图像！"""
         
         try:
-            # 调用图像生成API
+            # 调用图像编辑API
             url = f"{self.base_url}/images/generations"
             headers = {
                 "Content-Type": "application/json",
@@ -196,13 +201,21 @@ class CalligraphyStructureAnalyzer:
             payload = {
                 "model": self.image_model,
                 "prompt": prompt,
+                "image": image_data_url,  # 传递原始图片
                 "response_format": "url",
-                "size": "2K",  # 可选: 1K, 2K (2K为更高分辨率)
-                "stream": False,
+                "size": "adaptive",  # 自适应原图尺寸
+                "guidance_scale": 7.5,  # 引导强度，控制编辑效果
                 "watermark": False
+                # 注意：图像编辑模型不支持 stream 参数
             }
             
             response = requests.post(url, json=payload, headers=headers, timeout=60)
+            
+            # 打印详细错误信息以便调试
+            if response.status_code != 200:
+                print(f"API响应状态码: {response.status_code}")
+                print(f"API响应内容: {response.text}")
+            
             response.raise_for_status()
             
             result = response.json()
@@ -317,10 +330,11 @@ class CalligraphyStructureAnalyzer:
                 
                 print(f"分析结果: {analysis[:100]}...")  # 只显示前100字符
                 
-                # 步骤2: 生成结构分析图
-                print("[2/3] 生成结构分析图...")
+                # 步骤2: 在原图上添加结构标注
+                print("[2/3] 在原图上添加结构标注...")
                 diagram_data = self.generate_structure_diagram_image(
                     analysis,
+                    str(image_file),
                     character_name
                 )
                 
