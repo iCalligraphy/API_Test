@@ -42,7 +42,7 @@ for chunk in stream:
     print(chunk.choices[0].delta.content, end="")
 print()
 
-图像生成模型的API模型
+图像生成模型的API模型官方示例
 
 
 curl -X POST https://ark.cn-beijing.volces.com/api/v3/images/generations \
@@ -50,10 +50,14 @@ curl -X POST https://ark.cn-beijing.volces.com/api/v3/images/generations \
   -H "Authorization: Bearer $ARK_API_KEY" \
   -d '{
     "model": "doubao-seedream-4-0-250828",
-    "prompt": "星际穿越，黑洞，黑洞里冲出一辆快支离破碎的复古列车，抢视觉冲击力，电影大片，末日既视感，动感，对比色，oc渲染，光线追踪，动态模糊，景深，超现实主义，深蓝，画面通过细腻的丰富的色彩层次塑造主体与场景，质感真实，暗黑风背景的光影效果营造出氛围，整体兼具艺术幻想感，夸张的广角透视效果，耀光，反射，极致的光影，强引力，吞噬",
-    "sequential_image_generation": "disabled",
+    "prompt": "Generate 3 images of a girl and a cow plushie happily riding a roller coaster in an amusement park, depicting morning, noon, and night.",
+    "image": ["https://ark-doc.tos-ap-southeast-1.bytepluses.com/doc_image/seedream4_imagesToimages_1.png", "https://ark-doc.tos-ap-southeast-1.bytepluses.com/doc_image/seedream4_imagesToimages_2.png"],
+    "sequential_image_generation": "auto",
+    "sequential_image_generation_options": {
+        "max_images": 3
+    },
     "response_format": "url",
     "size": "2K",
-    "stream": false,
+    "stream": true,
     "watermark": true
 }'

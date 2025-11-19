@@ -82,6 +82,43 @@ class CalligraphyStructureAnalyzer:
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
     
+    def preprocess_and_encode_image(self, image_path: str, min_size: int = 300) -> str:
+        """
+        预处理图片（调整尺寸）并编码为base64字符串
+        确保图片的最小边长至少为min_size像素
+        
+        Args:
+            image_path: 图片文件路径
+            min_size: 最小边长（默认300px）
+            
+        Returns:
+            base64编码的图片字符串
+        """
+        # 打开图片
+        img = Image.open(image_path)
+        
+        # 检查图片尺寸
+        width, height = img.size
+        min_dimension = min(width, height)
+        
+        # 如果最小边长小于要求，进行等比例放大
+        if min_dimension < min_size:
+            scale = min_size / min_dimension
+            new_width = int(width * scale)
+            new_height = int(height * scale)
+            img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            print(f"  → 图片已调整: {width}x{height} -> {new_width}x{new_height}px")
+        
+        # 转换为RGB模式（如果是RGBA或其他模式）
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # 保存到BytesIO并编码为base64
+        buffer = BytesIO()
+        img.save(buffer, format='JPEG', quality=95)
+        buffer.seek(0)
+        return base64.b64encode(buffer.read()).decode('utf-8')
+    
     def analyze_structure_with_vision(self, image_path: str, character_name: str = None) -> str:
         """
         使用视觉模型分析书法汉字结构组成
@@ -144,24 +181,27 @@ class CalligraphyStructureAnalyzer:
             print(f"视觉分析API调用错误: {e}")
             return None
     
-    def generate_structure_diagram_image(self, analysis_text: str, character_name: str = None) -> bytes:
+    def generate_structure_diagram_image(self, image_path: str, analysis_text: str, character_name: str = None) -> bytes:
         """
         使用图像生成API创建结构分析图
         
         Args:
+            image_path: 原始书法汉字图片路径
             analysis_text: 结构分析文本
             character_name: 汉字名称（可选）
             
         Returns:
             生成的图片二进制数据
         """
-        # 构建图片生成提示词
-        char_info = f"'{character_name}'字" if character_name else "这个书法汉字"
+        # 预处理并编码原始图片为base64，作为参考图像
+        # 确保图片尺寸至少为300px（API要求）
+        base64_image = self.preprocess_and_encode_image(image_path, min_size=300)
+        image_data_url = f"data:image/jpeg;base64,{base64_image}"
         
-        prompt = f"""创建一张书法结构教学分析图，展示{char_info}的结构组成：
-
+        # 构建新的图片生成提示词
+        prompt = f"""请基于提供的原始书法汉字图片，在原图上添加书法结构教学分析，展示该字的结构组成：
 要求：
-- 白色背景，清晰简洁的教学风格
+- 改为白色背景，清晰简洁的教学风格
 - 中央展示完整的汉字，保持书法原貌
 - 用不同颜色的边框或底色区分不同的组成部分（如左右、上下等）
 - 用清晰的箭头标注各部分之间的关系：
@@ -176,8 +216,7 @@ class CalligraphyStructureAnalyzer:
 
 结构分析：
 {analysis_text}
-
-请生成专业的书法结构分析图，重点用箭头和标注展示各部分的结构关系。"""
+"""
         
         try:
             # 调用图像生成API
@@ -189,14 +228,19 @@ class CalligraphyStructureAnalyzer:
             payload = {
                 "model": self.image_model,
                 "prompt": prompt,
-                "response_format": "url",
-                "size": "2K",  # 可选: 1K, 2K (2K为更高分辨率)
-                "stream": False,
-                "watermark": False
+                "image": [image_data_url],  # 添加原始图片作为参考
+                "response_format": "url"
+                # 注意：部分模型可能不支持 size/stream/watermark 等参数
             }
             
             response = requests.post(url, json=payload, headers=headers, timeout=60)
-            response.raise_for_status()
+            
+            # 详细的错误处理
+            if response.status_code != 200:
+                error_detail = response.text
+                print(f"API请求失败 (状态码: {response.status_code})")
+                print(f"错误详情: {error_detail}")
+                response.raise_for_status()
             
             result = response.json()
             
@@ -313,6 +357,7 @@ class CalligraphyStructureAnalyzer:
                 # 步骤2: 生成结构分析图
                 print("[2/3] 生成结构分析图...")
                 diagram_data = self.generate_structure_diagram_image(
+                    str(image_file),
                     analysis,
                     character_name
                 )

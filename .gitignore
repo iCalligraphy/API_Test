@@ -11,6 +11,10 @@ kandian_ocr/characters/*
 !kandian_ocr/outputs/.gitkeep
 !kandian_ocr/characters/.gitkeep
 
+# 通用输出目录
+**/outputs/*
+!**/outputs/.gitkeep
+
 # Python缓存
 __pycache__/
 *.py[cod]
@@ -27,3 +31,6 @@ ENV/
 .idea/
 *.swp
 *.swo
+
+doubao_api/outputs/*
+doubao_api/characters_test/*
