@@ -1,0 +1,15 @@
+# 书法汉字结构分析图生成报告
+
+共生成 3 个汉字的结构分析图
+
+================================================================================
+
+## 州 字
+输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\州_structure_diagram.png
+
+## 春 字
+输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\春_structure_diagram.png
+
+## 雩 字
+输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\雩_structure_diagram.png
+
