@@ -1,0 +1,15 @@
+# 书法汉字笔迹流程图生成报告
+
+共生成 3 个汉字的笔迹流程图
+
+================================================================================
+
+## 州 字
+输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\州_stroke_diagram.png
+
+## 春 字
+输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\春_stroke_diagram.png
+
+## 雩 字
+输出图片: d:\assignment\SEProjects\IC\iCalligraphy\API_Test\doubao_api\outputs\雩_stroke_diagram.png
+
