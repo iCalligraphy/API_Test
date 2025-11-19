@@ -27,3 +27,6 @@ ENV/
 .idea/
 *.swp
 *.swo
+
+doubao_api/characters_test/*
+doubao_api/outputs/*
