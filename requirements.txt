@@ -1,5 +1,10 @@
+# 看典古籍OCR API依赖
 requests>=2.31.0
 matplotlib>=3.7.0
 Pillow>=10.0.0
 numpy>=1.24.0
+
+# 豆包大模型API依赖
+openai>=1.0.0
+python-dotenv>=1.0.0
 

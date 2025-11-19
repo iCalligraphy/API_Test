@@ -1,2 +1,29 @@
+# 环境变量配置文件
 .env
-characters/*
+
+# 看典古籍OCR输出文件
+kandian_ocr/images/*
+kandian_ocr/outputs/*
+kandian_ocr/characters/*
+
+# 保留目录结构（保留.gitkeep文件）
+!kandian_ocr/images/.gitkeep
+!kandian_ocr/outputs/.gitkeep
+!kandian_ocr/characters/.gitkeep
+
+# Python缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

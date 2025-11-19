@@ -1,36 +1,109 @@
 # API_Test
 
-古籍OCR API测试工具，用于识别字帖图片中的文字，并提取单字图片。
+古籍书法智能识别与分析工具集，集成看典古籍OCR API和豆包大模型API，用于古籍文字识别、单字提取和智能分析。
 
-## 功能
+## 项目结构
 
-- **OCR识别** (`ocr_test.py`): 批量识别`images/`目录中的字帖图片，调用OCR API进行文字识别
-- **结果可视化** (`visualize_ocr.py`): 在原始图片上绘制识别文字的边界框，生成可视化结果
-- **单字提取** (`extract_characters.py`): 基于OCR识别结果，从字帖图片中提取每个单字并保存为独立图片
+```
+API_Test/
+├── kandian_ocr/          # 看典古籍OCR API测试
+│   ├── images/           # 输入：待识别的字帖图片
+│   ├── outputs/          # 输出：OCR识别结果
+│   ├── characters/       # 输出：提取的单字图片
+│   ├── ocr_test.py       # OCR识别测试程序
+│   ├── extract_characters.py  # 单字提取程序
+│   ├── visualize_ocr.py  # 结果可视化程序
+│   └── README.md         # 详细使用说明
+│
+├── doubao_api/           # 豆包大模型API测试
+│   ├── doubao_test.py    # 豆包API测试程序
+│   └── README.md         # 详细使用说明
+│
+├── Docs/                 # API文档
+│   ├── 看典古籍OCR API使用文档.md
+│   ├── 看点古籍OCR API.md
+│   └── 豆包API.md
+│
+├── .env                  # 环境变量配置（不提交到Git）
+├── .env.example          # 环境变量配置示例
+└── requirements.txt      # Python依赖
+```
 
-## 输出
+## 快速开始
 
-- **识别结果** (`outputs/`目录): 
-  - `*_result.txt` - 文本结果
-  - `*_result.json` - JSON结果（包含位置信息）
-  - `*_visualized.png` - 可视化图片
+### 1. 安装依赖
 
-- **单字图片** (`characters/`目录):
-  - `图片名_L行号_W字序号_字符_置信度.png` - 每个单字的独立图片
+```bash
+pip install -r requirements.txt
+```
 
-## 使用
+### 2. 配置API密钥
 
-1. 配置`.env`文件，设置`Token`和`Email`
-2. 将测试图片放入`images/`目录
-3. 运行`python ocr_test.py`进行识别
-4. 运行`python visualize_ocr.py`生成可视化结果
-5. 运行`python extract_characters.py`提取单字图片
+复制`.env.example`为`.env`，并填入你的API密钥：
 
-## 单字提取参数说明
+```bash
+# 看典古籍OCR API
+Token="your-kandian-token-here"
+Email="your-email-or-phone-here"
 
-在`extract_characters.py`的`main()`函数中可以调整以下参数：
+# 豆包大模型API
+ARK_API_KEY="your-ark-api-key-here"
+```
 
-- `padding`: 边距（像素），默认5，在字符周围添加的空白边距
-- `min_confidence`: 最小置信度（0.0-1.0），默认0.0，过滤低置信度字符
-- `min_size`: 最小字符尺寸（像素），默认10，过滤太小的字符
-- `output_format`: 输出格式，默认'PNG'，支持PNG、JPEG等
+### 3. 使用看典古籍OCR
+
+进入`kandian_ocr/`文件夹，详见该目录下的[README.md](./kandian_ocr/README.md)。
+
+```bash
+cd kandian_ocr
+python ocr_test.py          # OCR识别
+python visualize_ocr.py     # 结果可视化
+python extract_characters.py # 单字提取
+```
+
+### 4. 使用豆包大模型API
+
+进入`doubao_api/`文件夹，详见该目录下的[README.md](./doubao_api/README.md)。
+
+```bash
+cd doubao_api
+python doubao_test.py       # 测试豆包API
+```
+
+## 功能特性
+
+### 看典古籍OCR
+
+- ✅ 批量识别古籍字帖图片
+- ✅ 支持竖排/横排自动识别
+- ✅ 文本行和单字坐标信息
+- ✅ 识别结果可视化
+- ✅ 单字图片自动提取
+
+### 豆包大模型
+
+- ✅ 古籍内容理解与分析
+- ✅ 书法字体风格解析
+- ✅ OCR结果智能校对
+- ✅ 书法知识问答
+- ✅ 流式和非流式调用
+
+## API文档
+
+- [看典古籍OCR API使用文档](./Docs/看典古籍OCR%20API使用文档.md)
+- [看点古籍OCR API](./Docs/看点古籍OCR%20API.md)
+- [豆包API](./Docs/豆包API.md)
+
+## 应用场景
+
+1. **古籍数字化** - 快速将古籍图像转换为可编辑文本
+2. **书法练习** - 提取单字图片用于书法学习
+3. **智能分析** - 结合AI大模型分析书法风格和文本内容
+4. **数据标注** - 为书法数据集生成标注数据
+
+## 注意事项
+
+- 看典古籍OCR每日免费额度2000次，超过需付费
+- 豆包API按调用量计费，请注意用量控制
+- 不要将`.env`文件提交到版本控制系统
+- 识别结果仅供参考，不具权威性
